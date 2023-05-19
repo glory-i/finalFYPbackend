@@ -118,12 +118,79 @@ namespace finalFYPbackend.Controllers
 
         }
 
+        [HttpGet("GetBudgetForDay")]
+        public async Task<ActionResult<ApiResponse>> GetBudgetForDay()
+        {
+
+            var response =  _mealServices.getBudgetForDay();
+            if (response.Message == ApiResponseEnum.success.ToString())
+            {
+                return Ok(response);
+            }
+            else
+            {
+                return BadRequest(response);
+            }
+
+        }
+
+
+        [HttpGet("GetBudgetForWeek")]
+        public async Task<ActionResult<ApiResponse>> GetBudgetForWeek()
+        {
+
+            var response = _mealServices.getBudgetForWeek();
+            if (response.Message == ApiResponseEnum.success.ToString())
+            {
+                return Ok(response);
+            }
+            else
+            {
+                return BadRequest(response);
+            }
+
+        }
+
+        [HttpGet("GetBudgetForMonth")]
+        public async Task<ActionResult<ApiResponse>> GetBudgetForMonth()
+        {
+
+            var response = _mealServices.getBudgetForMonth();
+            if (response.Message == ApiResponseEnum.success.ToString())
+            {
+                return Ok(response);
+            }
+            else
+            {
+                return BadRequest(response);
+            }
+
+        }
+
+
         ///[Authorize]
         [HttpPost("GenerateMealPlan")]
         public async Task<ActionResult<ApiResponse>> GenerateMealPlan(string duration,[FromBody] GenerateMealPlanRequestModel model)
         {
 
             var response = await _mealServices.generateMealPlan(duration, model);
+            if (response.Message == ApiResponseEnum.success.ToString())
+            {
+                return Ok(response);
+            }
+            else
+            {
+                return BadRequest(response);
+            }
+
+        }
+
+        ///[Authorize]
+        [HttpPost("RegenerateMealPlan")]
+        public async Task<ActionResult<ApiResponse>> RegenerateMealPlan(GenerateMealPlanRequestModel model)
+        {
+
+            var response = await _mealServices.regenerateMealPlan(model);
             if (response.Message == ApiResponseEnum.success.ToString())
             {
                 return Ok(response);

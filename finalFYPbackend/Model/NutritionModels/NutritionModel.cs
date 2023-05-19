@@ -37,4 +37,9 @@
         public double maxFatRequired { get; set; }
     }
 
+    public class BudgetRange
+    {
+        public double minBudget { get; set; }
+        public double maxBudget { get; set; }
+    }
 }

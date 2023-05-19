@@ -165,7 +165,7 @@ namespace finalFYPbackend.Services.Implementation
 
                 if (duration == DurationEnum.Month.GetEnumDescription())
                 {
-                    noOfDays = 28;
+                    noOfDays = 30;
                 }
 
                 //IMPORTANTTTTT. i will need to divide your min and max budget by your number of days. so if it is 60k for 28(or 30) days that will be about 2k per day. VERY IMPORTANT
@@ -586,6 +586,196 @@ namespace finalFYPbackend.Services.Implementation
 
             return mealPlan;
 
+        }
+
+
+        //THIS METHOD IS TO REGENERATE THE MEAL PLAN FOR A DAY BASICALLY. DURATION IS ALWAYS ONE DAY
+        public async Task<ApiResponse> regenerateMealPlan(GenerateMealPlanRequestModel model)
+        {
+            ReturnedResponse returnedResponse = new ReturnedResponse();
+
+            try
+            {
+                
+
+                //I AM NOT YET SO SURE OF THE ABOVE TWO LINES SHA O.
+
+                MealPlanPopulation population = new MealPlanPopulation
+                {
+                    mealPlans = new List<MealPlan>(),
+                    populationSize = MealPlanConstants.populationSize,
+                };
+
+                FinalMealPlan finalMealPlan = new FinalMealPlan { mealPlans = new List<MealPlan>() };
+
+              
+                    //this for loop uses genetic algorithm to generate a meal plan for a single day.
+                    for (int j = 0; j < MealPlanConstants.noOfGenerations; j++)
+                    {
+
+                        //STEP 1 - create initial population
+                        population = await createInitialPopulation(MealPlanConstants.populationSize);
+
+
+                        //STEP 2 - evaluate the fitness of each mealplan in initial population
+                        foreach (var mealPlan in population.mealPlans)
+                        {
+                            var mealPlanFitness = fitnessFunction(mealPlan, model);
+                            mealPlan.fitness = mealPlanFitness;
+                        }
+
+                        //STEP 3- SELECTION : next is to select parents which will involve roulette wheel 
+                        var parentpairs = generateParents(population);
+
+
+                        //STEP 4- CROSSOVER. : generate offspring by crossing over between pairs of parents
+                        //use crossover to create offspring in pairs for the next gen/population.
+
+                        var childrenpairs = generateOffspring(parentpairs, 3, model);
+
+                        //STEP 5- MUTATION, continue from here
+                        //mutate each offspring
+                        foreach (var childpair in childrenpairs)
+                        {
+                            await mutation(childpair, MealPlanConstants.mutationRate);
+
+                        }
+
+                        //clear population currently and set new population to new mutated offspring
+                        population.mealPlans.Clear();
+
+                        foreach (var childpair in childrenpairs)
+                        {
+                            population.mealPlans.Add(childpair.Child1);
+                            population.mealPlans.Add(childpair.Child2);
+                        }
+
+
+                    }
+                    //get the meal plan in the last generation with the highest fitness- that is the final answer. that is the best meal plan FOR THE DAY. add it to final meal plan for the week or month
+                    MealPlan bestMealPlan = population.mealPlans.OrderByDescending(f => f.fitness).First();
+                    finalMealPlan.mealPlans.Add(bestMealPlan);
+
+
+                return returnedResponse.CorrectResponse(finalMealPlan);
+            }
+
+            catch (Exception e)
+            {
+                return returnedResponse.ErrorResponse(e.ToString(), null);
+            }
+
+        }
+
+        public ApiResponse getBudgetForDay()
+        {
+            //throw new NotImplementedException();
+            ReturnedResponse returnedResponse = new ReturnedResponse();
+            BudgetRange budgetRange1 = new BudgetRange
+            {
+                minBudget = 1000,
+                maxBudget = 1500
+            };
+
+            BudgetRange budgetRange2 = new BudgetRange
+            {
+                minBudget = 1500,
+                maxBudget = 2000
+            };
+
+            BudgetRange budgetRange3 = new BudgetRange
+            {
+                minBudget = 2000,
+                maxBudget = 2500
+            };
+
+            BudgetRange budgetRange4 = new BudgetRange
+            {
+                minBudget = 2500,
+                maxBudget = 3000
+            };
+
+
+            List<BudgetRange> budgetRanges = new List<BudgetRange>
+            {
+                budgetRange1, budgetRange2, budgetRange3, budgetRange4 
+            };
+
+            return returnedResponse.CorrectResponse(budgetRanges);
+
+        }
+
+        public ApiResponse getBudgetForWeek()
+        {
+
+            ReturnedResponse returnedResponse = new ReturnedResponse();
+            BudgetRange budgetRange1 = new BudgetRange
+            {
+                minBudget = 7000,
+                maxBudget = 9000
+            };
+
+            BudgetRange budgetRange2 = new BudgetRange
+            {
+                minBudget = 9000,
+                maxBudget = 11000
+            };
+
+            BudgetRange budgetRange3 = new BudgetRange
+            {
+                minBudget = 11000,
+                maxBudget = 13000
+            };
+
+            BudgetRange budgetRange4 = new BudgetRange
+            {
+                minBudget = 13000,
+                maxBudget = 15000
+            };
+
+
+            List<BudgetRange> budgetRanges = new List<BudgetRange>
+            {
+                budgetRange1, budgetRange2, budgetRange3, budgetRange4
+            };
+
+            return returnedResponse.CorrectResponse(budgetRanges);
+        }
+
+        public ApiResponse getBudgetForMonth()
+        {
+            ReturnedResponse returnedResponse = new ReturnedResponse();
+            BudgetRange budgetRange1 = new BudgetRange
+            {
+                minBudget = 30000,
+                maxBudget = 40000
+            };
+
+            BudgetRange budgetRange2 = new BudgetRange
+            {
+                minBudget = 40000,
+                maxBudget = 50000
+            };
+
+            BudgetRange budgetRange3 = new BudgetRange
+            {
+                minBudget = 50000,
+                maxBudget = 60000
+            };
+
+            BudgetRange budgetRange4 = new BudgetRange
+            {
+                minBudget = 60000,
+                maxBudget = 70000
+            };
+
+
+            List<BudgetRange> budgetRanges = new List<BudgetRange>
+            {
+                budgetRange1, budgetRange2, budgetRange3, budgetRange4
+            };
+
+            return returnedResponse.CorrectResponse(budgetRanges);
         }
     }
 }

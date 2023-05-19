@@ -132,7 +132,7 @@ namespace finalFYPbackend.Controllers
         }
 
         [HttpPost("ValidateOTP")]
-        public async Task<ActionResult<ApiResponse>> ValidateOTP(int inputPin, string username, string email)
+        public async Task<ActionResult<ApiResponse>> ValidateOTP(string inputPin, string username, string email)
         {
 
             var response = await _authenticationServices.ValidateOTP(inputPin, username, email);

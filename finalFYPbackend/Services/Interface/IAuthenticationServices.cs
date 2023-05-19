@@ -28,7 +28,7 @@ namespace finalFYPbackend.Services.Interface
 
         public Task<ApiResponse> CreateOTP(string username, string email);
         public Task<ApiResponse> SendOTP(string username, string email);
-        public Task<ApiResponse> ValidateOTP(int inputPin, string username, string email);
+        public Task<ApiResponse> ValidateOTP(string inputPin, string username, string email);
 
 
 

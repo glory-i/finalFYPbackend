@@ -407,11 +407,11 @@ namespace finalFYPbackend.Services.Implementation
 
         }
 
-        public async Task<ApiResponse> ValidateOTP(int inputPin, string username, string email)
+        public async Task<ApiResponse> ValidateOTP(string inputPin, string username, string email)
         {
             ReturnedResponse returnedResponse = new ReturnedResponse();
             var userOTP = await _context.OTPs.Where(o => o.email == email).OrderBy(o => o.Id).LastAsync();
-            if (userOTP.pin == inputPin)
+            if (userOTP.pin == Convert.ToInt32(inputPin))
             {
                 return returnedResponse.CorrectResponse("OTP successfully validated");
             }
@@ -784,12 +784,12 @@ namespace finalFYPbackend.Services.Implementation
             ReturnedResponse returnedResponse = new ReturnedResponse();
 
             // check if there is any user with that email or username
-            var user = await userManager.FindByNameAsync(email) ?? await userManager.FindByEmailAsync(email);
+            var user = await userManager.FindByEmailAsync(email);
 
             //if user does not exist, return an error response
             if (user == null)
             {
-                return returnedResponse.ErrorResponse("No User exists with that Username or Email", null);
+                return returnedResponse.ErrorResponse("No User exists with that  Email", null);
             }
 
 
