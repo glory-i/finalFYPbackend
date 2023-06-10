@@ -104,7 +104,7 @@ namespace finalFYPbackend.Services.Implementation
         {
             ReturnedResponse returnedResponse = new ReturnedResponse();
 
-            var popularDinnersResponse = await _mealRepository.popularLunch();
+            var popularDinnersResponse = await _mealRepository.popularDinner();
             if (popularDinnersResponse.error == null)
             {
                 var popularDinners = popularDinnersResponse.data;
