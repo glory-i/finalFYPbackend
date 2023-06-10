@@ -185,22 +185,33 @@ namespace finalFYPbackend.Repository.Implementation
         public async Task<ApiResponse> popularBreakfast()
         {
             ReturnedResponse returnedResponse = new ReturnedResponse();
+            List<Meal> newPopularBreakfasts = new List<Meal>();
             try
             {
-                var popularBreakfasts = await _context.Meals.Where(f => f.TypeOfMeal.Contains(FoodTypeEnum.Breakfast.GetEnumDescription())).Take(5).ToListAsync();
+
+                Random random = new Random();
+                var popularBreakfasts = await _context.Meals.Where(f => f.TypeOfMeal.Contains(FoodTypeEnum.Breakfast.GetEnumDescription())).ToListAsync();
+
+                for (int i = 0; i < 5; i++)
+                {
+                    var popularBreakfast = popularBreakfasts[random.Next(popularBreakfasts.Count)];
+                    newPopularBreakfasts.Add(popularBreakfast);
+
+                    popularBreakfasts.RemoveAll(m => m.Name.Contains(popularBreakfast.Name));
+                }
+
 
                 if (popularBreakfasts == null)
                 {
-                    returnedResponse.ErrorResponse("Could not retrieve breakfasts", null);
+                    returnedResponse.ErrorResponse("Could not retrieve breakfast", null);
                 }
-                return returnedResponse.CorrectResponse(popularBreakfasts);
+                return returnedResponse.CorrectResponse(newPopularBreakfasts);
             }
 
             catch (Exception e)
             {
                 return returnedResponse.ErrorResponse(e.ToString(), null);
             }
-
 
 
         }
@@ -208,15 +219,27 @@ namespace finalFYPbackend.Repository.Implementation
         public async Task<ApiResponse> popularDinner()
         {
             ReturnedResponse returnedResponse = new ReturnedResponse();
+            List<Meal> newPopularDinners = new List<Meal>();
             try
             {
-                var popularDinners = await _context.Meals.Where(f => f.TypeOfMeal.Contains(FoodTypeEnum.Dinner.GetEnumDescription())).Take(5).ToListAsync();
+
+                Random random = new Random();
+                var popularDinners = await _context.Meals.Where(f => f.TypeOfMeal.Contains(FoodTypeEnum.Dinner.GetEnumDescription())).ToListAsync();
+
+                for (int i = 0; i < 5; i++)
+                {
+                    var popularDinner = popularDinners[random.Next(popularDinners.Count)];
+                    newPopularDinners.Add(popularDinner);
+
+                    popularDinners.RemoveAll(m => m.Name.Contains(popularDinner.Name));
+                }
+
 
                 if (popularDinners == null)
                 {
-                    returnedResponse.ErrorResponse("Could not retrieve dinners", null);
+                    returnedResponse.ErrorResponse("Could not retrieve dinner", null);
                 }
-                return returnedResponse.CorrectResponse(popularDinners);
+                return returnedResponse.CorrectResponse(newPopularDinners);
             }
 
             catch (Exception e)
@@ -224,21 +247,33 @@ namespace finalFYPbackend.Repository.Implementation
                 return returnedResponse.ErrorResponse(e.ToString(), null);
             }
 
-
         }
 
         public async Task<ApiResponse> popularLunch()
         {
             ReturnedResponse returnedResponse = new ReturnedResponse();
+            List<Meal> newPopularLunches = new List<Meal>();
             try
             {
-                var popularLunches = await _context.Meals.Where(f => f.TypeOfMeal.Contains(FoodTypeEnum.Lunch.GetEnumDescription())).Take(5).ToListAsync();
+                // var popularLunches = await _context.Meals.Where(f => f.TypeOfMeal.Contains(FoodTypeEnum.Lunch.GetEnumDescription())).Take(5).ToListAsync();
+
+                Random random = new Random();
+                var popularLunches = await _context.Meals.Where(f => f.TypeOfMeal.Contains(FoodTypeEnum.Lunch.GetEnumDescription())).ToListAsync();
+
+                for(int i = 0; i < 5; i++)
+                {
+                    var popularLunch = popularLunches[random.Next(popularLunches.Count)];
+                    newPopularLunches.Add(popularLunch);
+
+                    popularLunches.RemoveAll(m => m.Name.Contains(popularLunch.Name));
+                }
+
 
                 if (popularLunches == null)
                 {
                     returnedResponse.ErrorResponse("Could not retrieve lunches", null);
                 }
-                return returnedResponse.CorrectResponse(popularLunches);
+                return returnedResponse.CorrectResponse(newPopularLunches);
             }
 
             catch (Exception e)

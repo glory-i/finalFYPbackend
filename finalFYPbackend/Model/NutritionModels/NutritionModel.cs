@@ -35,6 +35,13 @@
 
         //max g of fats needed. recall that 1g of fat = 9 calories
         public double maxFatRequired { get; set; }
+
+
+
+        //now percentage value recommended for each of them
+        public double percentFat { get; set; }
+        public double percentCarbs { get; set; }
+        public double percentProtein { get; set; }
     }
 
     public class BudgetRange
