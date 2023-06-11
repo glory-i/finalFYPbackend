@@ -8,6 +8,7 @@ using finalFYPbackend.Responses;
 using finalFYPbackend.Responses.Enums;
 using finalFYPbackend.Services.Interface;
 using finalFYPbackend.Utilities;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -18,9 +19,11 @@ namespace finalFYPbackend.Services.Implementation
     public class MealServices : IMealServices
     {
         private readonly IMealRepository _mealRepository;
-        public MealServices(IMealRepository mealRepository)
+        private readonly ApplicationDbContext _context;
+        public MealServices(IMealRepository mealRepository, ApplicationDbContext context)
         {
             _mealRepository = mealRepository;
+            _context = context;
         }
 
 
@@ -145,9 +148,13 @@ namespace finalFYPbackend.Services.Implementation
             return returnedResponse.ErrorResponse(getMealsResponse.error.message, null);
         }
 
-        public async Task<ApiResponse> generateMealPlan(string duration, GenerateMealPlanRequestModel model)
+        public async Task<ApiResponse> generateMealPlan(string username, string duration, GenerateMealPlanRequestModel model)
         {
             ReturnedResponse returnedResponse = new ReturnedResponse();
+
+            var user = await _context.Users.Where(u => u.UserName == username).FirstAsync();
+            model.calorieRequirements = user.CalorieRequirement;
+
 
             try
             {

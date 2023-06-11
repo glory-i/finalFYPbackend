@@ -20,11 +20,11 @@ namespace finalFYPbackend.Model
         public string imageUrl { get; set; }
         public string flutterImageUrl { get; set; } //image url that can be recognized by flutter
 
-        public string FoodImageData { get; set; }
+       // public string FoodImageData { get; set; }
 
-        [NotMapped]
-        [DisplayName("Upload File")]
-        public IFormFile ImageFile { get; set; }
+       // [NotMapped]
+       // [DisplayName("Upload File")]
+        //public IFormFile ImageFile { get; set; }
     }
 
 }

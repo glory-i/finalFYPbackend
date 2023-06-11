@@ -168,12 +168,12 @@ namespace finalFYPbackend.Controllers
         }
 
 
-        ///[Authorize]
+        [Authorize]
         [HttpPost("GenerateMealPlan")]
         public async Task<ActionResult<ApiResponse>> GenerateMealPlan(string duration,[FromBody] GenerateMealPlanRequestModel model)
         {
 
-            var response = await _mealServices.generateMealPlan(duration, model);
+            var response = await _mealServices.generateMealPlan(User.Identity.Name, duration, model);
             if (response.Message == ApiResponseEnum.success.ToString())
             {
                 return Ok(response);
