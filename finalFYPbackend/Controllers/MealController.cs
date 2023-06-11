@@ -202,5 +202,23 @@ namespace finalFYPbackend.Controllers
 
         }
 
+
+
+        [HttpGet("UpdateMeals")]
+        public async Task<ActionResult<ApiResponse>> UpdateMeals()
+        {
+
+            var response = await _mealServices.updateMealsValues();
+            if (response.Message == ApiResponseEnum.success.ToString())
+            {
+                return Ok(response);
+            }
+            else
+            {
+                return BadRequest(response);
+            }
+
+        }
+
     }
 }

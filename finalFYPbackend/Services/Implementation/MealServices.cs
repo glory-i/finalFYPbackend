@@ -784,5 +784,25 @@ namespace finalFYPbackend.Services.Implementation
 
             return returnedResponse.CorrectResponse(budgetRanges);
         }
+
+        public async Task<ApiResponse> updateMealsValues()
+        {
+            ReturnedResponse returnedResponse = new ReturnedResponse();
+            //throw new NotImplementedException();
+            var meals = await _context.Meals.ToListAsync();
+            foreach(var meal in meals)
+            {
+                meal.Protein = Math.Round(meal.Protein, 2);
+                meal.Calories = Math.Round(meal.Calories, 2);
+                meal.Cost = Math.Round(meal.Cost, 2);
+                meal.Fat = Math.Round(meal.Fat, 2);
+                meal.Carbs = Math.Round(meal.Carbs, 2);
+
+                _context.Update(meal);
+                await _context.SaveChangesAsync();
+            }
+
+            return returnedResponse.CorrectResponse("successful");
+        }
     }
 }

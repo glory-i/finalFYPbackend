@@ -18,6 +18,7 @@ namespace finalFYPbackend.Services.Interface
         public ApiResponse getBudgetForDay(); //duration can either only be day
         public ApiResponse getBudgetForWeek(); //duration can either only be day
         public ApiResponse getBudgetForMonth(); //duration can either only be day
+        public Task<ApiResponse> updateMealsValues(); //every meal should have 2 dp values for double values
     }
 
 }
