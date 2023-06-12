@@ -224,6 +224,10 @@ namespace finalFYPbackend.Services.Implementation
                         {
                             await mutation(childpair, MealPlanConstants.mutationRate);
 
+                            //AFTER MUTATING RECALUCLATE THE MEAL PLAN PROPERTIES!!!!!!
+                            calculateMealPlanProperties(childpair.Child1);
+                            calculateMealPlanProperties(childpair.Child2);
+
                         }
 
                         //clear population currently and set new population to new mutated offspring
