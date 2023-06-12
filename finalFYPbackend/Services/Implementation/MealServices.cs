@@ -243,6 +243,18 @@ namespace finalFYPbackend.Services.Implementation
                     }
                     //get the meal plan in the last generation with the highest fitness- that is the final answer. that is the best meal plan FOR THE DAY. add it to final meal plan for the week or month
                     MealPlan bestMealPlan = population.mealPlans.OrderByDescending(f => f.fitness).First();
+
+                    //put everything to 2 dp 
+                    bestMealPlan.totalCost = Math.Round(bestMealPlan.totalCost, 2);
+                    bestMealPlan.totalFat = Math.Round(bestMealPlan.totalFat, 2);
+                    bestMealPlan.totalCarbs = Math.Round(bestMealPlan.totalCarbs, 2);
+                    bestMealPlan.totalCalories = Math.Round(bestMealPlan.totalCalories, 2);
+                    bestMealPlan.totalProtein = Math.Round(bestMealPlan.totalProtein, 2);
+                    bestMealPlan.fitness = Math.Round(bestMealPlan.fitness, 2);
+                    bestMealPlan.percentCalorieFromCarbs = Math.Round(bestMealPlan.percentCalorieFromCarbs, 2);
+                    bestMealPlan.percentCalorieFromFat = Math.Round(bestMealPlan.percentCalorieFromFat, 2);
+                    bestMealPlan.percentCalorieFromProtein = Math.Round(bestMealPlan.percentCalorieFromProtein, 2);
+
                     finalMealPlan.mealPlans.Add(bestMealPlan);
 
                 }
@@ -696,6 +708,19 @@ namespace finalFYPbackend.Services.Implementation
                     }
                     //get the meal plan in the last generation with the highest fitness- that is the final answer. that is the best meal plan FOR THE DAY. add it to final meal plan for the week or month
                     MealPlan bestMealPlan = population.mealPlans.OrderByDescending(f => f.fitness).First();
+
+                    //put everything to 2 dp 
+                    bestMealPlan.totalCost = Math.Round(bestMealPlan.totalCost, 2);
+                    bestMealPlan.totalFat = Math.Round(bestMealPlan.totalFat, 2);
+                    bestMealPlan.totalCarbs = Math.Round(bestMealPlan.totalCarbs, 2);
+                    bestMealPlan.totalCalories = Math.Round(bestMealPlan.totalCalories, 2);
+                    bestMealPlan.totalProtein = Math.Round(bestMealPlan.totalProtein, 2);
+                    bestMealPlan.fitness = Math.Round(bestMealPlan.fitness, 2);
+                    bestMealPlan.percentCalorieFromCarbs = Math.Round(bestMealPlan.percentCalorieFromCarbs, 2);
+                    bestMealPlan.percentCalorieFromFat = Math.Round(bestMealPlan.percentCalorieFromFat, 2);
+                    bestMealPlan.percentCalorieFromProtein = Math.Round(bestMealPlan.percentCalorieFromProtein, 2);
+
+
                     finalMealPlan.mealPlans.Add(bestMealPlan);
 
                 }
