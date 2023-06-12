@@ -187,7 +187,7 @@ namespace finalFYPbackend.Controllers
 
         [Authorize]
         [HttpPost("RegenerateMealPlan")]
-        public async Task<ActionResult<ApiResponse>> RegenerateMealPlan(int index, string duration, GenerateMealPlanRequestModel model)
+        public async Task<ActionResult<ApiResponse>> RegenerateMealPlan(string index, string duration, GenerateMealPlanRequestModel model)
         {
 
             var response = await _mealServices.regenerateMealPlan(index, User.Identity.Name, duration, model);

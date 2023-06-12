@@ -613,8 +613,9 @@ namespace finalFYPbackend.Services.Implementation
 
 
         //THIS METHOD IS TO REGENERATE THE MEAL PLAN FOR A DAY BASICALLY. DURATION IS ALWAYS ONE DAY
-        public async Task<ApiResponse> regenerateMealPlan(int index, string username, string duration, GenerateMealPlanRequestModel model)
+        public async Task<ApiResponse> regenerateMealPlan(string index, string username, string duration, GenerateMealPlanRequestModel model)
         {
+            
             ReturnedResponse returnedResponse = new ReturnedResponse();
 
             var user = await _context.Users.Where(u => u.UserName == username).FirstAsync();
@@ -725,7 +726,7 @@ namespace finalFYPbackend.Services.Implementation
 
                 }
 
-                return returnedResponse.CorrectResponse(finalMealPlan.mealPlans[index]);
+                return returnedResponse.CorrectResponse(finalMealPlan.mealPlans[Convert.ToInt32(index)]);
             }
 
             catch (Exception e)
