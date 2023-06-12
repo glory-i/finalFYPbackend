@@ -601,13 +601,37 @@ namespace finalFYPbackend.Services.Implementation
 
 
         //THIS METHOD IS TO REGENERATE THE MEAL PLAN FOR A DAY BASICALLY. DURATION IS ALWAYS ONE DAY
-        public async Task<ApiResponse> regenerateMealPlan(GenerateMealPlanRequestModel model)
+        public async Task<ApiResponse> regenerateMealPlan(int index, string username, string duration, GenerateMealPlanRequestModel model)
         {
             ReturnedResponse returnedResponse = new ReturnedResponse();
 
+            var user = await _context.Users.Where(u => u.UserName == username).FirstAsync();
+            model.calorieRequirements = user.CalorieRequirement;
+
+
             try
             {
-                
+                int noOfDays = 0;
+
+                if (duration == DurationEnum.Day.GetEnumDescription())
+                {
+                    noOfDays = 1;
+                }
+
+                if (duration == DurationEnum.Week.GetEnumDescription())
+                {
+                    noOfDays = 7;
+                }
+
+                if (duration == DurationEnum.Month.GetEnumDescription())
+                {
+                    noOfDays = 30;
+                }
+
+                //IMPORTANTTTTT. i will need to divide your min and max budget by your number of days. so if it is 60k for 28(or 30) days that will be about 2k per day. VERY IMPORTANT
+
+                model.minBudget = model.minBudget / Convert.ToDouble(noOfDays);
+                model.maxBudget = model.maxBudget / Convert.ToDouble(noOfDays);
 
                 //I AM NOT YET SO SURE OF THE ABOVE TWO LINES SHA O.
 
@@ -619,7 +643,10 @@ namespace finalFYPbackend.Services.Implementation
 
                 FinalMealPlan finalMealPlan = new FinalMealPlan { mealPlans = new List<MealPlan>() };
 
-              
+                //this for lopp gets the best meal plan for the day and adds it. in the end it will bring a list of 1 , 7 or 28 meal plans.
+                for (int i = 0; i < noOfDays; i++)
+                {
+
                     //this for loop uses genetic algorithm to generate a meal plan for a single day.
                     for (int j = 0; j < MealPlanConstants.noOfGenerations; j++)
                     {
@@ -650,6 +677,10 @@ namespace finalFYPbackend.Services.Implementation
                         {
                             await mutation(childpair, MealPlanConstants.mutationRate);
 
+                            //AFTER MUTATING RECALUCLATE THE MEAL PLAN PROPERTIES!!!!!!
+                            calculateMealPlanProperties(childpair.Child1);
+                            calculateMealPlanProperties(childpair.Child2);
+
                         }
 
                         //clear population currently and set new population to new mutated offspring
@@ -667,14 +698,16 @@ namespace finalFYPbackend.Services.Implementation
                     MealPlan bestMealPlan = population.mealPlans.OrderByDescending(f => f.fitness).First();
                     finalMealPlan.mealPlans.Add(bestMealPlan);
 
+                }
 
-                return returnedResponse.CorrectResponse(finalMealPlan);
+                return returnedResponse.CorrectResponse(finalMealPlan.mealPlans[index]);
             }
 
             catch (Exception e)
             {
                 return returnedResponse.ErrorResponse(e.ToString(), null);
             }
+
 
         }
 
