@@ -287,13 +287,24 @@ namespace finalFYPbackend.Repository.Implementation
             ReturnedResponse returnedResponse = new ReturnedResponse();
             try
             {
+                Random random = new Random();
+                List<Meal> newSearchedMeals = new List<Meal>();
+
                 var searchedMeals = await _context.Meals.Where(m => (m.TypeOfMeal + m.Name + m.Description + m.Producer).Contains(search)).ToListAsync();
                 if (searchedMeals == null)
                 {
                     return returnedResponse.ErrorResponse("Could not find any meal at this time", null);
                 }
 
-                return returnedResponse.CorrectResponse(searchedMeals);
+                for (int i = 0; i < searchedMeals.Count; i++)
+                {
+                    var searchedMeal = searchedMeals[random.Next(searchedMeals.Count)];
+                    newSearchedMeals.Add(searchedMeal);
+
+                    searchedMeals.RemoveAll(m => m.Name.Contains(searchedMeal.Name));
+                }
+
+                return returnedResponse.CorrectResponse(newSearchedMeals);
             }
 
             catch (Exception e)
