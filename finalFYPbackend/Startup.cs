@@ -1,4 +1,5 @@
 using finalFYPbackend.Authentication;
+using finalFYPbackend.Model.EmailSettings;
 using finalFYPbackend.Repository.Implementation;
 using finalFYPbackend.Repository.Interface;
 using finalFYPbackend.Services.Implementation;
@@ -77,6 +78,8 @@ namespace finalFYPbackend
                 };
 
             });
+
+            services.Configure<EmailSettings>(Configuration.GetSection("EmailSettings"));
 
 
 

@@ -16,6 +16,23 @@ namespace finalFYPbackend.Model
         public double percentCalorieFromFat { get; set; }
         public double percentCalorieFromCarbs { get; set; }
         public double percentCalorieFromProtein { get; set; }
+        
+        
+        
+        
+        public double targetMinCost { get; set; }
+        public double targetMaxCost { get; set; }
+        public double targetCalories { get; set; }
+        public double targetMinCarbs { get; set; }
+        public double targetMaxCarbs { get; set; }
+
+        public double targetMinProtein { get; set; }
+        public double targetMaxProtein { get; set; }
+
+        public double targetMinFat { get; set; }
+        public double targetMaxFat { get; set; }
+
+
 
     }
 

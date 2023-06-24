@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace finalFYPbackend.Model
 {
@@ -8,6 +9,7 @@ namespace finalFYPbackend.Model
         public int pin { get; set; }
         public string username { get; set; }
         public string email { get; set; }
+        public DateTime dateExpired { get; set; }
     }
 
     public class Content

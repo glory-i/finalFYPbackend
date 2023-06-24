@@ -21,6 +21,27 @@ namespace finalFYPbackend.Services.Implementation
             _authenticationServices = authenticationServices;
         }
 
+        public NutritionCalculatorResponseModel calculateNutrientsFromCalories(double calories)
+        {
+            NutritionCalculatorResponseModel nutritionCalculatorResponseModel = new NutritionCalculatorResponseModel
+            {
+
+                totalCaloriesRequired = calories,
+
+                minProteinRequired = Math.Round(((NutritionalConstants.minPercentCaloriesFromProteins / 100.0) * calories) / (NutritionalConstants.proteinToCalories), 2),
+                maxProteinRequired = Math.Round(((NutritionalConstants.maxPercentCaloriesFromProteins / 100.0) * calories) / (NutritionalConstants.proteinToCalories), 2),
+
+                minCarbsRequired = Math.Round(((NutritionalConstants.minPercentCaloriesFromCarbs / 100.0) * calories) / (NutritionalConstants.carbsToCalories), 2),
+                maxCarbsRequired = Math.Round(((NutritionalConstants.maxPercentCaloriesFromCarbs / 100.0) * calories) / (NutritionalConstants.carbsToCalories), 2),
+
+                minFatRequired = Math.Round(((NutritionalConstants.minPercentCaloriesFromFats / 100.0) * calories) / (NutritionalConstants.fatToCalories), 2),
+                maxFatRequired = Math.Round(((NutritionalConstants.maxPercentCaloriesFromFats / 100.0) * calories) / (NutritionalConstants.fatToCalories), 2),
+
+            };
+
+            return nutritionCalculatorResponseModel;
+        }
+
         public async Task<ApiResponse> NutritionCalculator(NutritionCalculatorRequestModel model)
         {
             ReturnedResponse returnedResponse = new ReturnedResponse();

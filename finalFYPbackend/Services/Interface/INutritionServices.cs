@@ -8,5 +8,6 @@ namespace finalFYPbackend.Services.Interface
     public interface INutritionServices
     {
         public Task<ApiResponse> NutritionCalculator(NutritionCalculatorRequestModel model);
+        public NutritionCalculatorResponseModel calculateNutrientsFromCalories(double calories);
     }
 }

@@ -190,7 +190,7 @@ namespace finalFYPbackend.Controllers
         public async Task<ActionResult<ApiResponse>> RegenerateMealPlan(string index, string duration, GenerateMealPlanRequestModel model)
         {
 
-            var response = await _mealServices.regenerateMealPlan(index, User.Identity.Name, duration, model);
+            var response = await _mealServices.regenerateMealPlanForADay(index, User.Identity.Name, duration, model);
             if (response.Message == ApiResponseEnum.success.ToString())
             {
                 return Ok(response);

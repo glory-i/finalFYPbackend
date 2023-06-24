@@ -21,6 +21,12 @@ using Microsoft.EntityFrameworkCore;
 using System.Net.Http.Json;
 using Microsoft.AspNetCore.Http;
 using finalFYPbackend.Utilities;
+using finalFYPbackend.Model.EmailSettings;
+using System.IO;
+using System.Net.Mail;
+using System.Net.Mime;
+using System.Net;
+using Microsoft.Extensions.Options;
 
 namespace finalFYPbackend.Services.Implementation
 {
@@ -30,14 +36,17 @@ namespace finalFYPbackend.Services.Implementation
         private readonly IConfiguration _configuration;
         private readonly RoleManager<IdentityRole> roleManager;
 
+        private readonly EmailSettings _emailSettings;
+
 
         private ApplicationDbContext _context;
-        public AuthenticationServices(UserManager<ApplicationUser> userManager, RoleManager<IdentityRole> roleManager, IConfiguration configuration, ApplicationDbContext context)
+        public AuthenticationServices(UserManager<ApplicationUser> userManager, RoleManager<IdentityRole> roleManager, IConfiguration configuration, ApplicationDbContext context, IOptions<EmailSettings> emailSettings)
         {
             this.userManager = userManager;
             _configuration = configuration;
             this.roleManager = roleManager;
             _context = context;
+            _emailSettings = emailSettings.Value;
         }
 
         public async Task<string> CreateRoles()
@@ -312,6 +321,7 @@ namespace finalFYPbackend.Services.Implementation
                     pin = pin,
                     username = username,
                     email = email,
+                    dateExpired = DateTime.Now.AddMinutes(1),
 
                 };
                 await _context.OTPs.AddAsync(newOTP);
@@ -330,9 +340,98 @@ namespace finalFYPbackend.Services.Implementation
 
         }
 
+        /* public async Task<ApiResponse> SendOTP(string username, string email)
+         {
+             ReturnedResponse returnedResponse = new ReturnedResponse();
+             var newOTP = await CreateOTP(username, email);
+
+             if (newOTP.error != null)
+             {
+                 return returnedResponse.ErrorResponse(newOTP.error.message, null);
+             }
+
+             HttpClient client = new HttpClient();
+             string baseUrl = "https://rapidprod-sendgrid-v1.p.rapidapi.com/";
+
+             client.BaseAddress = new Uri(baseUrl);
+             client.DefaultRequestHeaders.Clear();
+             client.DefaultRequestHeaders.Accept.Add(new System.Net.Http.Headers.MediaTypeWithQualityHeaderValue("application/json"));
+             client.DefaultRequestHeaders.Add("X-RapidAPI-Key", "26c54984bcmsh448ceed8e8e9cecp1e9f68jsn5dc0e458b769");
+             client.DefaultRequestHeaders.Add("X-RapidAPI-Host", "rapidprod-sendgrid-v1.p.rapidapi.com");
+
+             SendEmailRequest request = new SendEmailRequest
+             {
+                 personalizations = new List<Personalization>()
+                 {
+                     new Personalization
+                     {
+                         to = new List<To>()
+                         {
+                             new To
+                             {
+                                 email = email,
+                             }
+                         },
+                         subject = "YOUR ONE TIME PASSOWRD (OTP)",
+                     }
+                 },
+
+                 from = new From
+                 {
+                     email = "gniweriebor@gmail.com",
+                 },
+
+                 content = new List<Content>()
+                 {
+                     new Content
+                     {
+                         type = "text/plain",
+                          value = $"YOUR ONE TIME PASSWORD TO LOG IN TO FOODIFIED HAS BEEN GENERATED. DO NOT GIVE ANYONE, IT IS {newOTP.data}",
+                     }
+                 }
+
+             };
+
+             try
+             {
+                 string path = "mail/send";
+                 HttpResponseMessage Res = await client.PostAsJsonAsync(path, request);
+
+                 if (Res.IsSuccessStatusCode)
+                 {
+                     var response = await Res.Content.ReadAsStringAsync();
+                     return returnedResponse.CorrectResponse("Email Successfully Sent");
+
+                 }
+
+                 return returnedResponse.ErrorResponse(Res.Content.ToString(), null);
+
+             }
+
+             catch (Exception my_ex)
+             {
+                 return returnedResponse.ErrorResponse(my_ex.Message.ToString(), null);
+
+             }
+
+
+         }
+
+         */
         public async Task<ApiResponse> SendOTP(string username, string email)
         {
+
+
             ReturnedResponse returnedResponse = new ReturnedResponse();
+            var senderEmail = _emailSettings.emailAddress;
+            var senderPassword = _emailSettings.password;
+
+            var client = new SmtpClient("smtp.gmail.com", 587)
+            {
+                EnableSsl = true,
+                Credentials = new NetworkCredential(senderEmail, senderPassword)
+            };
+
             var newOTP = await CreateOTP(username, email);
 
             if (newOTP.error != null)
@@ -340,61 +439,16 @@ namespace finalFYPbackend.Services.Implementation
                 return returnedResponse.ErrorResponse(newOTP.error.message, null);
             }
 
-            HttpClient client = new HttpClient();
-            string baseUrl = "https://rapidprod-sendgrid-v1.p.rapidapi.com/";
-
-            client.BaseAddress = new Uri(baseUrl);
-            client.DefaultRequestHeaders.Clear();
-            client.DefaultRequestHeaders.Accept.Add(new System.Net.Http.Headers.MediaTypeWithQualityHeaderValue("application/json"));
-            client.DefaultRequestHeaders.Add("X-RapidAPI-Key", "26c54984bcmsh448ceed8e8e9cecp1e9f68jsn5dc0e458b769");
-            client.DefaultRequestHeaders.Add("X-RapidAPI-Host", "rapidprod-sendgrid-v1.p.rapidapi.com");
-
-            SendEmailRequest request = new SendEmailRequest
-            {
-                personalizations = new List<Personalization>()
-                {
-                    new Personalization
-                    {
-                        to = new List<To>()
-                        {
-                            new To
-                            {
-                                email = email,
-                            }
-                        },
-                        subject = "YOUR ONE TIME PASSOWRD (OTP)",
-                    }
-                },
-
-                from = new From
-                {
-                    email = "gniweriebor@gmail.com",
-                },
-
-                content = new List<Content>()
-                {
-                    new Content
-                    {
-                        type = "text/plain",
-                         value = $"YOUR ONE TIME PASSWORD TO LOG IN TO FOODIFIED HAS BEEN GENERATED. DO NOT GIVE ANYONE, IT IS {newOTP.data}",
-                    }
-                }
-
-            };
-
             try
             {
-                string path = "mail/send";
-                HttpResponseMessage Res = await client.PostAsJsonAsync(path, request);
+                MailMessage mailMessage = new MailMessage(senderEmail, email);
+                mailMessage.Subject = "ONE-TIME PASSWORD FROM FOODIFIED";
+                mailMessage.Body = $"Hello {username}, Please kindly find your one time password for FOODIFIED Below :" +
+                    $"\n  {newOTP.data} Thank you for using FOODIFIED";
 
-                if (Res.IsSuccessStatusCode)
-                {
-                    var response = await Res.Content.ReadAsStringAsync();
-                    return returnedResponse.CorrectResponse("Email Successfully Sent");
 
-                }
-
-                return returnedResponse.ErrorResponse(Res.Content.ToString(), null);
+                await client.SendMailAsync(mailMessage);
+                return returnedResponse.CorrectResponse("successfully sent message");
 
             }
 
@@ -407,12 +461,25 @@ namespace finalFYPbackend.Services.Implementation
 
         }
 
+
         public async Task<ApiResponse> ValidateOTP(string inputPin, string username, string email)
         {
             ReturnedResponse returnedResponse = new ReturnedResponse();
+
+            if (String.IsNullOrEmpty(inputPin))
+            {
+                return returnedResponse.ErrorResponse("OTP cannot be empty", null);
+            }
+
             var userOTP = await _context.OTPs.Where(o => o.email == email).OrderBy(o => o.Id).LastAsync();
+            
             if (userOTP.pin == Convert.ToInt32(inputPin))
             {
+                if (DateTime.Now > userOTP.dateExpired)
+                {
+                    return returnedResponse.ErrorResponse("This otp has expired", null);
+                }
+
                 return returnedResponse.CorrectResponse("OTP successfully validated");
             }
             return returnedResponse.ErrorResponse("Invalid OTP", null);

@@ -19,11 +19,13 @@ namespace finalFYPbackend.Services.Implementation
     public class MealServices : IMealServices
     {
         private readonly IMealRepository _mealRepository;
+        private readonly INutritionServices _nutritionServices;
         private readonly ApplicationDbContext _context;
-        public MealServices(IMealRepository mealRepository, ApplicationDbContext context)
+        public MealServices(IMealRepository mealRepository, ApplicationDbContext context, INutritionServices nutritionServices)
         {
             _mealRepository = mealRepository;
             _context = context;
+            _nutritionServices = nutritionServices;
         }
 
 
@@ -244,7 +246,7 @@ namespace finalFYPbackend.Services.Implementation
                     //get the meal plan in the last generation with the highest fitness- that is the final answer. that is the best meal plan FOR THE DAY. add it to final meal plan for the week or month
                     MealPlan bestMealPlan = population.mealPlans.OrderByDescending(f => f.fitness).First();
 
-                    //put everything to 2 dp 
+                    //get the totals for everything - cost, calories, nutrients, etc
                     bestMealPlan.totalCost = Math.Round(bestMealPlan.totalCost, 2);
                     bestMealPlan.totalFat = Math.Round(bestMealPlan.totalFat, 2);
                     bestMealPlan.totalCarbs = Math.Round(bestMealPlan.totalCarbs, 2);
@@ -254,6 +256,20 @@ namespace finalFYPbackend.Services.Implementation
                     bestMealPlan.percentCalorieFromCarbs = Math.Round(bestMealPlan.percentCalorieFromCarbs, 2);
                     bestMealPlan.percentCalorieFromFat = Math.Round(bestMealPlan.percentCalorieFromFat, 2);
                     bestMealPlan.percentCalorieFromProtein = Math.Round(bestMealPlan.percentCalorieFromProtein, 2);
+
+
+                    //get the targets for everything - cost, calories, nutrients, etc
+                    var nutrientsCalculator = _nutritionServices.calculateNutrientsFromCalories(model.calorieRequirements);
+
+                    bestMealPlan.targetCalories = model.calorieRequirements;
+                    bestMealPlan.targetMaxCost = model.maxBudget;
+                    bestMealPlan.targetMinCost = model.minBudget;
+                    bestMealPlan.targetMaxCarbs = nutrientsCalculator.maxCarbsRequired;
+                    bestMealPlan.targetMinCarbs = nutrientsCalculator.minCarbsRequired;
+                    bestMealPlan.targetMaxProtein = nutrientsCalculator.maxProteinRequired;
+                    bestMealPlan.targetMinProtein = nutrientsCalculator.minProteinRequired;
+                    bestMealPlan.targetMaxFat = nutrientsCalculator.maxFatRequired;
+                    bestMealPlan.targetMinFat = nutrientsCalculator.minFatRequired;
 
                     finalMealPlan.mealPlans.Add(bestMealPlan);
 
@@ -867,5 +883,153 @@ namespace finalFYPbackend.Services.Implementation
 
             return returnedResponse.CorrectResponse("successful");
         }
+
+
+
+        public async Task<ApiResponse> regenerateMealPlanForADay(string index, string username, string duration, GenerateMealPlanRequestModel model)
+        {
+            ReturnedResponse returnedResponse = new ReturnedResponse();
+
+            var user = await _context.Users.Where(u => u.UserName == username).FirstAsync();
+            model.calorieRequirements = user.CalorieRequirement;
+
+            try
+            {
+                int noOfDays = 0;
+
+                if (duration == DurationEnum.Day.GetEnumDescription())
+                {
+                    noOfDays = 1;
+                }
+
+                if (duration == DurationEnum.Week.GetEnumDescription())
+                {
+                    noOfDays = 7;
+                }
+
+                if (duration == DurationEnum.Month.GetEnumDescription())
+                {
+                    noOfDays = 30;
+                }
+
+                //IMPORTANTTTTT. i will need to divide your min and max budget by your number of days. so if it is 60k for 28(or 30) days that will be about 2k per day. VERY IMPORTANT
+                var threshold = 0.5;
+
+                model.minBudget = model.minBudget / Convert.ToDouble(noOfDays);
+                model.maxBudget = model.maxBudget / Convert.ToDouble(noOfDays);
+
+                //I AM NOT YET SO SURE OF THE ABOVE TWO LINES SHA O.
+
+                MealPlanPopulation population = new MealPlanPopulation
+                {
+                    mealPlans = new List<MealPlan>(),
+                    populationSize = MealPlanConstants.populationSize,
+                };
+
+                FinalMealPlan finalMealPlan = new FinalMealPlan { mealPlans = new List<MealPlan>() };
+
+                //this for lopp gets the best meal plan for the day and adds it. in the end it will bring a list of 1 , 7 or 28 meal plans.
+                for (int i = 0; i < noOfDays; i++)
+                {
+                    bool isThresholdMet = false;
+                    //this for loop uses genetic algorithm to generate a meal plan for a single day.
+                    while (!isThresholdMet)
+                    {
+
+                        //STEP 1 - create initial population
+                        population = await createInitialPopulation(MealPlanConstants.populationSize);
+
+
+                        //STEP 2 - evaluate the fitness of each mealplan in initial population
+                        foreach (var mealPlan in population.mealPlans)
+                        {
+                            var mealPlanFitness = fitnessFunction(mealPlan, model);
+                            mealPlan.fitness = mealPlanFitness;
+                        }
+
+                        //STEP 3- SELECTION : next is to select parents which will involve roulette wheel 
+                        var parentpairs = generateParents(population);
+
+
+                        //STEP 4- CROSSOVER. : generate offspring by crossing over between pairs of parents
+                        //use crossover to create offspring in pairs for the next gen/population.
+
+                        var childrenpairs = generateOffspring(parentpairs, 3, model);
+
+                        //STEP 5- MUTATION, continue from here
+                        //mutate each offspring
+                        foreach (var childpair in childrenpairs)
+                        {
+                            await mutation(childpair, MealPlanConstants.mutationRate);
+
+                            //AFTER MUTATING RECALUCLATE THE MEAL PLAN PROPERTIES!!!!!!
+                            calculateMealPlanProperties(childpair.Child1);
+                            calculateMealPlanProperties(childpair.Child2);
+
+                        }
+
+                        //clear population currently and set new population to new mutated offspring
+                        population.mealPlans.Clear();
+
+                        foreach (var childpair in childrenpairs)
+                        {
+                            population.mealPlans.Add(childpair.Child1);
+                            population.mealPlans.Add(childpair.Child2);
+                        }
+
+                        //get the meal plan in the last generation with the highest fitness- that is the final answer. that is the best meal plan FOR THE DAY. add it to final meal plan for the week or month
+                        MealPlan bestMealPlan = population.mealPlans.OrderByDescending(f => f.fitness).First();
+
+                        //check that the meal plan meets the threshold
+                        if (bestMealPlan.fitness >= threshold)
+                        {
+                            //put everything to 2 dp 
+                            bestMealPlan.totalCost = Math.Round(bestMealPlan.totalCost, 2);
+                            bestMealPlan.totalFat = Math.Round(bestMealPlan.totalFat, 2);
+                            bestMealPlan.totalCarbs = Math.Round(bestMealPlan.totalCarbs, 2);
+                            bestMealPlan.totalCalories = Math.Round(bestMealPlan.totalCalories, 2);
+                            bestMealPlan.totalProtein = Math.Round(bestMealPlan.totalProtein, 2);
+                            bestMealPlan.fitness = Math.Round(bestMealPlan.fitness, 2);
+                            bestMealPlan.percentCalorieFromCarbs = Math.Round(bestMealPlan.percentCalorieFromCarbs, 2);
+                            bestMealPlan.percentCalorieFromFat = Math.Round(bestMealPlan.percentCalorieFromFat, 2);
+                            bestMealPlan.percentCalorieFromProtein = Math.Round(bestMealPlan.percentCalorieFromProtein, 2);
+
+                            //get the targets for everything - cost, calories, nutrients, etc
+                            var nutrientsCalculator = _nutritionServices.calculateNutrientsFromCalories(model.calorieRequirements);
+
+                            bestMealPlan.targetCalories = model.calorieRequirements;
+                            bestMealPlan.targetMaxCost = model.maxBudget;
+                            bestMealPlan.targetMinCost = model.minBudget;
+                            bestMealPlan.targetMaxCarbs = nutrientsCalculator.maxCarbsRequired;
+                            bestMealPlan.targetMinCarbs = nutrientsCalculator.minCarbsRequired;
+                            bestMealPlan.targetMaxProtein = nutrientsCalculator.maxProteinRequired;
+                            bestMealPlan.targetMinProtein = nutrientsCalculator.minProteinRequired;
+                            bestMealPlan.targetMaxFat = nutrientsCalculator.maxFatRequired;
+                            bestMealPlan.targetMinFat = nutrientsCalculator.minFatRequired;
+
+                            isThresholdMet = true;
+                            return returnedResponse.CorrectResponse(bestMealPlan);
+
+                            //finalMealPlan.mealPlans.Add(bestMealPlan);
+
+                        }
+                    }
+                }
+                return returnedResponse.ErrorResponse("Unable to re-generate meal plan for the day",null);
+
+
+            }
+
+            catch (Exception e)
+            {
+                return returnedResponse.ErrorResponse(e.ToString(), null);
+            }
+
+
+
+        }
+
+
+
     }
 }
