@@ -263,8 +263,8 @@ namespace finalFYPbackend.Services.Implementation
                     var nutrientsCalculator = _nutritionServices.calculateNutrientsFromCalories(model.calorieRequirements);
 
                     bestMealPlan.targetCalories = model.calorieRequirements;
-                    bestMealPlan.targetMaxCost = model.maxBudget;
-                    bestMealPlan.targetMinCost = model.minBudget;
+                    bestMealPlan.targetMaxCost = Math.Round(model.maxBudget / 5.0) * 5;
+                    bestMealPlan.targetMinCost = Math.Round(model.minBudget / 5.0) * 5;
                     bestMealPlan.targetMaxCarbs = nutrientsCalculator.maxCarbsRequired;
                     bestMealPlan.targetMinCarbs = nutrientsCalculator.minCarbsRequired;
                     bestMealPlan.targetMaxProtein = nutrientsCalculator.maxProteinRequired;
