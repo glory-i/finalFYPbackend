@@ -321,7 +321,7 @@ namespace finalFYPbackend.Services.Implementation
                     pin = pin,
                     username = username,
                     email = email,
-                    dateExpired = DateTime.Now.AddMinutes(1),
+                    dateExpired = DateTime.Now.AddMinutes(10),
 
                 };
                 await _context.OTPs.AddAsync(newOTP);
