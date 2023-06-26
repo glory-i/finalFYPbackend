@@ -368,7 +368,7 @@ namespace finalFYPbackend.Services.Implementation
             double calorieFitness = 1 - Math.Abs((totalCalories - mealPlanRequest.calorieRequirements) / mealPlanRequest.calorieRequirements);
 
             //fitness based on how well it meets cost requirements. (upper and lower bound)
-            double costFitness = 1 - (Math.Abs(totalCost - ((mealPlanRequest.maxBudget + mealPlanRequest.minBudget) / 2)) / (mealPlanRequest.maxBudget - mealPlanRequest.minBudget));
+            double costFitness = 1 - Math.Abs((totalCost - ((mealPlanRequest.maxBudget + mealPlanRequest.minBudget) / 2)) / (mealPlanRequest.maxBudget - mealPlanRequest.minBudget));
 
 
             /*
