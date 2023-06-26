@@ -227,9 +227,12 @@ namespace finalFYPbackend.Services.Implementation
                         {
                             await mutation(childpair, MealPlanConstants.mutationRate);
 
-                            //AFTER MUTATING RECALUCLATE THE MEAL PLAN PROPERTIES!!!!!!
+                            //AFTER MUTATING RECALUCLATE THE MEAL PLAN PROPERTIES AND FITNESS FUNCTIONNN!!!!!!
                             calculateMealPlanProperties(childpair.Child1);
                             calculateMealPlanProperties(childpair.Child2);
+
+                            childpair.Child1.fitness = fitnessFunction(childpair.Child1, model);
+                            childpair.Child2.fitness = fitnessFunction(childpair.Child2, model);
 
                         }
 
@@ -963,9 +966,13 @@ namespace finalFYPbackend.Services.Implementation
                         {
                             await mutation(childpair, MealPlanConstants.mutationRate);
 
-                            //AFTER MUTATING RECALUCLATE THE MEAL PLAN PROPERTIES!!!!!!
+                            //AFTER MUTATING RECALUCLATE THE MEAL PLAN PROPERTIES AND FITNESS FUNCTIONNN!!!!!!
                             calculateMealPlanProperties(childpair.Child1);
                             calculateMealPlanProperties(childpair.Child2);
+
+                            childpair.Child1.fitness = fitnessFunction(childpair.Child1, model);
+                            childpair.Child2.fitness = fitnessFunction(childpair.Child2, model);
+
 
                         }
 
